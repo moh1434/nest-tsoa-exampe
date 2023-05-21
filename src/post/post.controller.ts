@@ -2,7 +2,6 @@ import { Request, Route } from 'tsoa';
 import { CreatePostDto } from './dto/create-post.dto';
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { PostService } from './post.service';
-import { ApiConsumes } from '@nestjs/swagger';
 
 @Route('post')
 @Controller('post')
