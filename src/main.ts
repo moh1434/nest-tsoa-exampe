@@ -1,36 +1,23 @@
-import { RolesGuard } from './auth/auth-utils/roles.decorator';
-import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { PrismaService } from 'nestjs-prisma';
 
 import { VersioningType } from '@nestjs/common';
-import cookieParser from 'cookie-parser';
-import swaggerTsoa from '../swagger.json';
+
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import { JwtAuthGuard } from './auth/auth-utils/jwt-auth.guard';
-import { PrismaErrorInterceptor } from './utils/exception/prisma-error.interceptor';
-import { AllExceptionsFilter } from './utils/exception/all-exceptions.filter';
-import { Env } from './utils/env';
+
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { tsoaResponseToNestDocument } from './utils/tsoaResponseToNestDocument';
 import { ZodValidationPipe } from '@anatine/zod-nestjs';
+
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import swaggerTsoa from '../swagger.json';
+import { tsoaResponseToNestDocument } from './utils/tsoaResponseToNestDocument';
 async function bootstrap() {
   dotenv.config();
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const env = app.get<Env>(Env);
-  // log
-  if (env.isDebug) {
-    app.use(morgan('dev'));
-  }
 
-  // cors
-  app.enableCors({
-    origin: env.frontendUrl,
-    credentials: true,
-  });
   // enable version
   app.enableVersioning({
     type: VersioningType.URI,
@@ -41,20 +28,7 @@ async function bootstrap() {
   const prismaService: PrismaService = app.get(PrismaService);
   await prismaService.enableShutdownHooks(app);
 
-  // map prisma error
-  app.useGlobalInterceptors(new PrismaErrorInterceptor());
-
-  // cookie
-  app.use(cookieParser(env.cookieSignKey));
-
   app.useGlobalPipes(new ZodValidationPipe());
-
-  const { httpAdapter } = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
-  const reflector = app.get(Reflector);
-  app.useGlobalGuards(new JwtAuthGuard(reflector));
-
-  app.useGlobalGuards(new RolesGuard(reflector));
 
   //start: Swagger
   const config = new DocumentBuilder()
@@ -72,7 +46,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
   //end: Swagger
 
-  await app.listen(env.port);
+  await app.listen(3000);
 }
 
 bootstrap();
