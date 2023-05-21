@@ -18,7 +18,6 @@ export class PostController {
 
   @Post('/')
   async createByUser(@Request() @Body() body: CreatePostDto) {
-    console.log(body);
     return await this.postService.create(body);
   }
 }
