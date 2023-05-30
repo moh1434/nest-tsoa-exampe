@@ -12,6 +12,17 @@ export function tsoaResponseToNestDocument(
   document: OpenAPIObject,
   withVersionPrefix: boolean,
 ) {
+  //start: merge schemas
+  if (swaggerTsoa.components?.schemas) {
+    if (!document.components) {
+      document.components = { schemas: {} };
+    }
+    if (!document.components.schemas) {
+      document.components.schemas = {};
+    }
+    Object.assign(document.components.schemas, swaggerTsoa.components.schemas);
+  }
+  //end: merge schemas
   //
   const nestPathKeysToVersionPrefix = {}; //nestPathKeysToVersionPrefix={ '/auth/register':'/v1', '/auth/login': '/v2' }
   if (withVersionPrefix) {
